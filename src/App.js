@@ -1,64 +1,70 @@
-
+import "bootstrap/dist/css/bootstrap.min.css"
 import './App.css';
-import QRCode from "qrcode.react";
+import './market.css';
+import QRCode from "qrcode.react";// eslint-disable-next-line 
 import {getBalance, readCount, setCount} from './api/UseCaver';
 import React, { useState } from 'react';
 import * as KlipAPI from "./api/UseKlip.js";
+import { Alert, Container } from "react-bootstrap"
 
-const DEFAULT_QR_CODE = "DEFAULT";
+const DEFAULT_QR_CODE = "DEFAULT";// eslint-disable-next-line 
+const DEFAULT_ADDRESS = "0x00000000000000000000000000";
+
+
 function App() {
-  const [balance, setBalance] = useState('0');
+  // const [nfts, setNfts] = useState([]);
+  const [myBalance, setMyBalance] = useState('0');
+  const [myAddress, setMyAddress] = useState('0x00000000000000000000000000');
   const [qrvalue, setQrvalue] = useState(DEFAULT_QR_CODE);
 
-  const onClickGetAddress = () => {
-    KlipAPI.getAddress(setQrvalue);
-  }
-
-  const onClickSetCount = () => {
-    KlipAPI.setCount(2000, setQrvalue);
-  }
-
-
-  // readCount();
-  // getBalance('0x54fb486ef9797f09d68e010dc3925b88fcf2e127');
+  const getUserData = () => {
+    KlipAPI.getAddress(setQrvalue, async (address) => {
+      setMyAddress(address);
+      const _balance = getBalance(address);
+      setMyBalance(_balance);
+    });
+  };
 
   return (
     <div className="App">
-      <header className="App-header">
+      <div style={{ backgroundColor: "black" , padding: 10 }}>
+        <div 
+          style={{
+            fontSize: 30, 
+            fontWeight: "bold", 
+            paddingLeft: 5, 
+            marginTop: 10 
+          }}
+        > 내 지갑 
+        </div>
+        {myAddress}
+        <br />
+        <Alert
+          onClick={getUserData}
+          variant={'balance'}
+          style={{ backgroundColor: "#f40075", fontSize: 25 }}
+        >
+          {myBalance}
+        </Alert>
+      </div>
+
+        {/* 주소 잔고 */}
+      <Container 
+        style={{
+          backgroundColor: 'white',
+          width: 300,
+          height: 300,
+          padding: 20,
+        }}
+      >
+        <QRCode value={qrvalue} size={256} style={{ margin: 'auto' }}/>
+      </Container>
+
+        {/* 갤러리 (마켓, 내 지갑)*/}
+        {/* 발행 페이지 */}
+        {/* 탭 */}
+        {/* 모달 */}
         
-        <button
-          onClick={()=> {
-            onClickGetAddress();
-          }}
-        >
-          주소 가져오기
-        </button>
-
-        <button
-          onClick={()=> {
-            onClickSetCount();
-          }}
-        >
-          카운트 값 변경
-        </button>
-
-        <br />
-        <br />
-        <br />
-        <QRCode value={qrvalue} />
-        <p>{balance}</p>
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
     </div>
   );
 }
