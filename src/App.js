@@ -1,29 +1,37 @@
 import "bootstrap/dist/css/bootstrap.min.css"
 import './App.css';
 import './market.css';
-import QRCode from "qrcode.react";// eslint-disable-next-line 
+import QRCode from "qrcode.react";
 import {getBalance, readCount, setCount} from './api/UseCaver';
 import React, { useState } from 'react';
 import * as KlipAPI from "./api/UseKlip.js";
 import { Alert, Container } from "react-bootstrap"
 
-const DEFAULT_QR_CODE = "DEFAULT";// eslint-disable-next-line 
-const DEFAULT_ADDRESS = "0x00000000000000000000000000";
+const DEFAULT_QR_CODE = "DEFAULT";
+const DEFAULT_ADDRESS = "0x00000000000000000000000000000";
 
 
 function App() {
   // const [nfts, setNfts] = useState([]);
   const [myBalance, setMyBalance] = useState('0');
-  const [myAddress, setMyAddress] = useState('0x00000000000000000000000000');
+  const [myAddress, setMyAddress] = useState(DEFAULT_ADDRESS);
   const [qrvalue, setQrvalue] = useState(DEFAULT_QR_CODE);
 
   const getUserData = () => {
     KlipAPI.getAddress(setQrvalue, async (address) => {
       setMyAddress(address);
-      const _balance = getBalance(address);
+      const _balance = await getBalance(address);
       setMyBalance(_balance);
     });
   };
+
+  // const onClickGetAddress = () => {
+  //   KlipAPI.getAddress(setQrvalue);
+  // };
+
+  // const onClickSetCount = () => {
+  //   KlipAPI.setCount(2000, setQrvalue);
+  // }
 
   return (
     <div className="App">
@@ -47,6 +55,16 @@ function App() {
           {myBalance}
         </Alert>
       </div>
+
+      {/* <div>
+        <button onClick={() => {onClickGetAddress(); }}>
+          주소 가져오기
+        </button>
+        <br />
+        <button onClick={()=>{onClickSetCount(); }}>
+          카운트 값 변경
+        </button>
+      </div> */}
 
         {/* 주소 잔고 */}
       <Container 

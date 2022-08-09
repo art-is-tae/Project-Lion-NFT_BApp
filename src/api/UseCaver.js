@@ -20,7 +20,7 @@ export const readCount = async () => {
 
 export const getBalance = (address) => {
   return caver.rpc.klay.getBalance(address).then((response) => {
-    const balance = caver.utils.convertFromPeb(caver.utils.hexToNumberString(response));
+    const balance = caver.utils.  convertFromPeb(caver.utils.hexToNumberString(response));
     console.log(`BLANCE: ${balance}`);
     return balance;
   })
@@ -43,7 +43,7 @@ export const setCount = async (newCount) => {
 
     console.log(receipt);
   } catch(e) {
-    console.log(`[ERROR_SET_COUNT] ${e}`)
+    console.log(`[ERROR_SET_COUNT]${e}`)
   }
 
 }

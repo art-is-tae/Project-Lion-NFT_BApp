@@ -11,12 +11,12 @@ export const setCount = (count, setQrvalue) => {
       bapp: {
         name: APP_NAME
       },
-      type: "execute_constract",
+      type: "execute_contract",
       transaction: {
         // "from": '',
         to: COUNT_CONTRACT_ADDRESS,
+        abi: '{ "constatnt": false, "inputs": [ { "name": "_count", "type": "uint256" } ], "name": "setCount", "outputs": [], "payable": false, "stateMutability": "nonpayable", "type": "function" }',
         value: "0",
-        abi: '{ "constatnt": false, "inputs": [ { "internalType": "uint256", "name": "_count", "type": "uint256" } ], "name": "setCount", "outputs": [], "stateMutability": "nonpayable", "type": "function" }',
         params: `["${count}"]`
       }
     }
@@ -37,7 +37,6 @@ export const setCount = (count, setQrvalue) => {
             if (res.data.result === 'success') {
               clearInterval(timerId);
             }
-
         }
       });
     }, 1000);
