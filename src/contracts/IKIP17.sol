@@ -1355,7 +1355,7 @@ contract KIP17MetadataMintable is KIP13, KIP17, KIP17Metadata, MinterRole {
         address to,
         uint256 tokenId,
         string memory tokenURI
-    ) public onlyMinter returns (bool) {
+    ) public returns (bool) {
         _mint(to, tokenId);
         _setTokenURI(tokenId, tokenURI);
         return true;
@@ -1395,232 +1395,16 @@ contract KIP17Mintable is KIP17, MinterRole {
      * @param tokenId The token id to mint.
      * @return A boolean that indicates if the operation was successful.
      */
-    function mint(address to, uint256 tokenId)
-        public
-        onlyMinter
-        returns (bool)
-    {
+    function mint(address to, uint256 tokenId) public returns (bool) {
         _mint(to, tokenId);
         return true;
     }
 }
 
-// File: contracts/token/KIP17/KIP17Burnable.sol
-
-pragma solidity ^0.5.0;
-
-/**
- * @title KIP17 Burnable Token
- * @dev KIP17 Token that can be irreversibly burned (destroyed).
- * See http://kips.klaytn.com/KIPs/kip-17-non_fungible_token
- */
-contract KIP17Burnable is KIP13, KIP17 {
-    /*
-     *     bytes4(keccak256('burn(uint256)')) == 0x42966c68
-     *
-     *     => 0x42966c68 == 0x42966c68
-     */
-    bytes4 private constant _INTERFACE_ID_KIP17_BURNABLE = 0x42966c68;
-
-    /**
-     * @dev Constructor function.
-     */
-    constructor() public {
-        // register the supported interface to conform to KIP17Burnable via KIP13
-        _registerInterface(_INTERFACE_ID_KIP17_BURNABLE);
-    }
-
-    /**
-     * @dev Burns a specific KIP17 token.
-     * @param tokenId uint256 id of the KIP17 token to be burned.
-     */
-    function burn(uint256 tokenId) public {
-        //solhint-disable-next-line max-line-length
-        require(
-            _isApprovedOrOwner(msg.sender, tokenId),
-            "KIP17Burnable: caller is not owner nor approved"
-        );
-        _burn(tokenId);
-    }
-}
-
-// File: contracts/access/roles/PauserRole.sol
-
-pragma solidity ^0.5.0;
-
-contract PauserRole {
-    using Roles for Roles.Role;
-
-    event PauserAdded(address indexed account);
-    event PauserRemoved(address indexed account);
-
-    Roles.Role private _pausers;
-
-    constructor() internal {
-        _addPauser(msg.sender);
-    }
-
-    modifier onlyPauser() {
-        require(
-            isPauser(msg.sender),
-            "PauserRole: caller does not have the Pauser role"
-        );
-        _;
-    }
-
-    function isPauser(address account) public view returns (bool) {
-        return _pausers.has(account);
-    }
-
-    function addPauser(address account) public onlyPauser {
-        _addPauser(account);
-    }
-
-    function renouncePauser() public {
-        _removePauser(msg.sender);
-    }
-
-    function _addPauser(address account) internal {
-        _pausers.add(account);
-        emit PauserAdded(account);
-    }
-
-    function _removePauser(address account) internal {
-        _pausers.remove(account);
-        emit PauserRemoved(account);
-    }
-}
-
-// File: contracts/lifecycle/Pausable.sol
-
-pragma solidity ^0.5.0;
-
-/**
- * @dev Contract module which allows children to implement an emergency stop
- * mechanism that can be triggered by an authorized account.
- *
- * This module is used through inheritance. It will make available the
- * modifiers `whenNotPaused` and `whenPaused`, which can be applied to
- * the functions of your contract. Note that they will not be pausable by
- * simply including this module, only once the modifiers are put in place.
- */
-contract Pausable is PauserRole {
-    /**
-     * @dev Emitted when the pause is triggered by a pauser (`account`).
-     */
-    event Paused(address account);
-
-    /**
-     * @dev Emitted when the pause is lifted by a pauser (`account`).
-     */
-    event Unpaused(address account);
-
-    bool private _paused;
-
-    /**
-     * @dev Initializes the contract in unpaused state. Assigns the Pauser role
-     * to the deployer.
-     */
-    constructor() internal {
-        _paused = false;
-    }
-
-    /**
-     * @dev Returns true if the contract is paused, and false otherwise.
-     */
-    function paused() public view returns (bool) {
-        return _paused;
-    }
-
-    /**
-     * @dev Modifier to make a function callable only when the contract is not paused.
-     */
-    modifier whenNotPaused() {
-        require(!_paused, "Pausable: paused");
-        _;
-    }
-
-    /**
-     * @dev Modifier to make a function callable only when the contract is paused.
-     */
-    modifier whenPaused() {
-        require(_paused, "Pausable: not paused");
-        _;
-    }
-
-    /**
-     * @dev Called by a pauser to pause, triggers stopped state.
-     */
-    function pause() public onlyPauser whenNotPaused {
-        _paused = true;
-        emit Paused(msg.sender);
-    }
-
-    /**
-     * @dev Called by a pauser to unpause, returns to normal state.
-     */
-    function unpause() public onlyPauser whenPaused {
-        _paused = false;
-        emit Unpaused(msg.sender);
-    }
-}
-
-// File: contracts/token/KIP17/KIP17Pausable.sol
-
-pragma solidity ^0.5.0;
-
-/**
- * @title KIP17 Non-Fungible Pausable token
- * @dev KIP17 modified with pausable transfers.
- */
-contract KIP17Pausable is KIP13, KIP17, Pausable {
-    /*
-     *     bytes4(keccak256('paused()')) == 0x5c975abb
-     *     bytes4(keccak256('pause()')) == 0x8456cb59
-     *     bytes4(keccak256('unpause()')) == 0x3f4ba83a
-     *     bytes4(keccak256('isPauser(address)')) == 0x46fbf68e
-     *     bytes4(keccak256('addPauser(address)')) == 0x82dc1ec4
-     *     bytes4(keccak256('renouncePauser()')) == 0x6ef8d66d
-     *
-     *     => 0x5c975abb ^ 0x8456cb59 ^ 0x3f4ba83a ^ 0x46fbf68e ^ 0x82dc1ec4 ^ 0x6ef8d66d == 0x4d5507ff
-     */
-    bytes4 private constant _INTERFACE_ID_KIP17_PAUSABLE = 0x4d5507ff;
-
-    /**
-     * @dev Constructor function.
-     */
-    constructor() public {
-        // register the supported interface to conform to KIP17Pausable via KIP13
-        _registerInterface(_INTERFACE_ID_KIP17_PAUSABLE);
-    }
-
-    function approve(address to, uint256 tokenId) public whenNotPaused {
-        super.approve(to, tokenId);
-    }
-
-    function setApprovalForAll(address to, bool approved) public whenNotPaused {
-        super.setApprovalForAll(to, approved);
-    }
-
-    function transferFrom(
-        address from,
-        address to,
-        uint256 tokenId
-    ) public whenNotPaused {
-        super.transferFrom(from, to, tokenId);
-    }
-}
-
-// File: contracts/token/KIP17/KIP17Token.sol
-
-pragma solidity ^0.5.0;
-
 contract KIP17Token is
     KIP17Full,
     KIP17Mintable,
-    KIP17MetadataMintable,
-    KIP17Burnable,
-    KIP17Pausable
+    KIP17MetadataMintable
 {
     constructor(string memory name, string memory symbol)
         public
