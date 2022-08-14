@@ -64,9 +64,6 @@ contract NFTSimple {
     }
 
     function _removeTokenFromList(address from, uint256 tokenId) private {
-        // [10, 15, 19, 20] -> 19번을 삭제 하고 싶어요
-        // [20, 15, 20, 19]
-        // [10, 15, 20]
         uint256 lastTokenIdex = _ownedTokens[from].length - 1;
         for (uint256 i = 0; i < _ownedTokens[from].length; i++) {
             if (tokenId == _ownedTokens[from][i]) {
